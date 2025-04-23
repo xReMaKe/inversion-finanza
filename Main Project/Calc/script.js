@@ -108,83 +108,67 @@ function initializeChart() {
 // --- Calculation Logic ---
 function calculateCompoundGrowth() {
     const P = parseFloat(initialInvestmentEl.value) || 0;
-    const PMT = parseFloat(regularContributionEl.value) || 0;
-    const contribFreq = parseInt(contributionFrequencyEl.value); // 12, 4, 1
-    const r = (parseFloat(interestRateEl.value) || 0) / 100; // Annual rate as decimal
-    const n = parseInt(compoundingFrequencyEl.value); // Compounding periods per year (12, 4, 2, 1)
+    const PMT_user = parseFloat(regularContributionEl.value) || 0;
+    const contribFreq = parseInt(contributionFrequencyEl.value); // e.g. 12
+    const r = (parseFloat(interestRateEl.value) || 0) / 100;
+    const n = parseInt(compoundingFrequencyEl.value); // e.g. 1
     const t = parseInt(yearsEl.value) || 0;
 
-    let futureValue = P;
-    let totalContributions = P;
-    let cumulativeInterest = 0;
+    // Setup chart arrays
+    const labels = ["Start"];
+    const contrib = [P];
+    const interest = [0];
 
-    // Data for chart
-    const yearsLabels = ["Start"];
-    const contributionData = [P];
-    const interestData = [0]; // Start with zero interest
-
-    // Calculate period rate and contribution per period
+    // Precompute per-period values
     const ratePerPeriod = r / n;
-    // How many contributions occur per compounding period?
-    const contribsPerCompPeriod = n / contribFreq;
-    const pmtPerCompPeriod = PMT * contribsPerCompPeriod;
+    const depositPerPeriod = PMT_user * (contribFreq / n);
+    // if n=1 & contribFreq=12, depositPerPeriod = PMT_user * 12
 
-    // Simulate year by year for chart data
-    let currentBalance = P;
-    let cumulativeContributions = P;
+    let balance = P;
+    let totalContrib = P;
+
+    // Loop year by year
     for (let year = 1; year <= t; year++) {
-        let balanceAtYearStart = currentBalance;
-        let contributionsThisYear = 0;
-
         for (let period = 1; period <= n; period++) {
-            // Add contribution at the START of the period it's due
-            // This is a simplification - assumes contributions happen right before compounding
-            if (contribFreq > 0 && (period - 1) % (n / contribFreq) === 0) {
-                const contributionAmount = PMT; // The actual amount added per contribution event
-                currentBalance += contributionAmount;
-                cumulativeContributions += contributionAmount;
-                contributionsThisYear += contributionAmount;
-            }
+            // 1) Add the proportional deposit for this period
+            balance += depositPerPeriod;
+            totalContrib += depositPerPeriod;
 
-            // Calculate interest for the period
-            let interestThisPeriod = currentBalance * ratePerPeriod;
-            currentBalance += interestThisPeriod; // Add interest
+            // 2) Apply interest
+            const interestThis = balance * ratePerPeriod;
+            // optionally: const interestThis = Math.round(balance*ratePerPeriod*100)/100;
+            balance += interestThis;
         }
-
-        yearsLabels.push(`Año ${year}`);
-        contributionData.push(cumulativeContributions); // Total principal paid in by this year end
-        // Interest is the total balance minus the total contributions
-        interestData.push(currentBalance - cumulativeContributions);
+        labels.push(`Año ${year}`);
+        contrib.push(totalContrib);
+        interest.push(balance - totalContrib);
     }
 
-    // Final precise calculation using formula (more accurate for final numbers than loop)
-    // Compound interest for principal
-    const finalP = P * Math.pow(1 + r / n, n * t);
-    // Future value of an ordinary annuity for contributions
-    // Note: This standard formula assumes contributions match compounding frequency.
-    // Adjusting perfectly for mismatched frequencies is complex. We'll use the loop result for display consistency.
-    // const finalPMT = PMT * ( (Math.pow(1 + r/n, n*t) - 1) / (r/n) ) * (1 / contribsPerCompPeriod); // Simplified adjustment
+    // === Formula‐based headlines ===
+    // FV of principal
+    const fvP = P * Math.pow(1 + r / n, n * t);
+    // FV of annuity
+    const PMTpp = depositPerPeriod;
+    let fvA = 0;
+    if (r === 0) fvA = PMTpp * n * t;
+    else if (PMTpp > 0)
+        fvA = PMTpp * ((Math.pow(1 + r / n, n * t) - 1) / (r / n));
 
-    // Use the loop result for display consistency
-    futureValue = currentBalance;
-    totalContributions = cumulativeContributions; // From loop
-    cumulativeInterest = futureValue - totalContributions;
+    const fvTotal = fvP + fvA;
+    const totalCon = P + PMT_user * contribFreq * t;
+    const totalInt = fvTotal - totalCon;
 
-    // --- Update Display ---
-    futureValueEl.textContent = formatCurrency(futureValue);
-    totalContributionsEl.textContent = formatCurrency(totalContributions);
-    totalInterestEl.textContent = formatCurrency(cumulativeInterest);
+    // === Update DOM ===
+    futureValueEl.textContent = formatCurrency(fvTotal);
+    totalContributionsEl.textContent = formatCurrency(totalCon);
+    totalInterestEl.textContent = formatCurrency(totalInt);
 
-    // --- Update Chart ---
-    // Ensure the chart instance exists
-    if (!growthChart) {
-        initializeChart();
-    }
-
-    growthChart.data.labels = yearsLabels;
-    growthChart.data.datasets[0].data = contributionData; // Contributions dataset
-    growthChart.data.datasets[1].data = interestData; // Interest dataset
-    growthChart.update(); // Redraw the chart
+    // === Update Chart ===
+    if (!growthChart) initializeChart();
+    growthChart.data.labels = labels;
+    growthChart.data.datasets[0].data = contrib;
+    growthChart.data.datasets[1].data = interest;
+    growthChart.update();
 }
 
 // --- Formatting Helper ---
