@@ -4,7 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Video | Aprende con WolfOfJayCee!</title>
-        <link rel="stylesheet" href="../calc/style.css" />
+        <link rel="stylesheet" href="/calculator/style.css" />
         <style>
             /* --- Import Google Font --- */
             @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
@@ -176,49 +176,18 @@
         </style>
     </head>
     <body>
-        <header class="site-header">
-            <nav class="main-nav">
-                <div class="nav-brand">
-                    <a href="index.html">
-                        <img
-                            src="../image/jc1.png"
-                            alt="WolfOfJayCee Finance Logo"
-                        />
-                    </a>
-                </div>
-                <ul class="nav-links">
-                    <li class="dropdown">
-                        <a href="index.html">Guias</a>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a
-                                    href="video-template.html?id=como-hacerte-rico-invirtiendo"
-                                    >¿Por Qué Invertir?</a
-                                >
-                            </li>
-                            <li>
-                                <a
-                                    href="video-template.html?id=como-invertir-bolsa"
-                                    >Como Invertir en la Bolsa</a
-                                >
-                            </li>
-                            <li>
-                                <a
-                                    href="video-template.html?id=acciones-vs-etfs"
-                                    >Acciones vs ETFs</a
-                                >
-                            </li>
-                            <li>
-                                <a href="video-template.html?id=analizar-tesla"
-                                    >Como Analizar una Compañía (Tesla)</a
-                                >
-                            </li>
-                        </ul>
-                    </li>
-                    <li><a href="../calc/calculator.html">Calculadora</a></li>
-                </ul>
-            </nav>
-        </header>
+        <!-- pull in the shared header -->
+        <div id="site-header"></div>
+        <script>
+            fetch("../header.html")
+                .then((r) => r.text())
+                .then((html) => {
+                    document.getElementById("site-header").innerHTML = html;
+                })
+                .catch(console.error);
+        </script>
+
+        <!-- now your existing page content -->
         <div class="video-page-container">
             <header class="header-section">
                 <h1 id="videoTitle">Cargando video...</h1>

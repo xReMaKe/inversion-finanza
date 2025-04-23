@@ -94,6 +94,25 @@ h2 {
     padding-bottom: 10px;
 }
 
+/* ================== MAIN CONTENT H1 STYLING ================== */
+
+/* Override the default H1 style for main page titles */
+main h1 {
+    background-color: transparent; /* Remove the green background */
+    color: var(--text-primary); /* Use the standard dark text color */
+    font-size: 1.6em; /* Slightly smaller than header H1? Adjust as needed */
+    text-align: center; /* Keep it centered, or change to left if preferred */
+    padding: 20px 10px 15px 10px; /* Adjust top/bottom padding */
+    margin-bottom: 20px; /* Add space below the heading */
+    border-bottom: 1px solid var(--border-color); /* Optional: Add a subtle line below */
+}
+
+/* You might want to ensure your general h1 rule doesn't interfere */
+/* Or make the general h1 rule more specific if it was only for the calculator title */
+/* For example: .calculator-container h1 { ... } */
+
+/* ================== END MAIN CONTENT H1 STYLING ================== */
+
 .main-content {
     display: flex;
 
